@@ -1,26 +1,21 @@
 use regex::Regex;
 
 fn do_mul(s: &str) -> i64 {
-    let mut idx = 0;
-    assert!(&s[idx..idx + 4] == "mul(");
-    idx += 4;
+    let mut idx = 4;
+
     let mut first = 0;
     while s.chars().nth(idx).unwrap().is_ascii_digit() {
         first = first * 10 + s.chars().nth(idx).unwrap().to_digit(10).unwrap() as i64;
         idx += 1;
     }
 
-    assert!(s.chars().nth(idx).unwrap() == ',');
-
-    idx += 1;
+    idx += 1; //,
 
     let mut second = 0;
     while s.chars().nth(idx).unwrap().is_ascii_digit() {
         second = second * 10 + s.chars().nth(idx).unwrap().to_digit(10).unwrap() as i64;
         idx += 1;
     }
-
-    assert!(s.chars().nth(idx).unwrap() == ')');
 
     first * second
 }

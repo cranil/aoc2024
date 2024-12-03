@@ -6,3 +6,8 @@ edition = "2021"
 [dependencies]
 regex = "1.11.1"
 solver = { version = "0.1.0", path = "../solver" }
+
+[build-dependencies]
+cargo-manifest = "0.17.0"
+chrono = "0.4.38"
+reqwest = { version = "0.12.9", features = ["blocking"] }

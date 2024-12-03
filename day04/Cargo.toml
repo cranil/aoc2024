@@ -1,5 +1,5 @@
 [package]
-name = "day02"
+name = "day04"
 version = "0.1.0"
 edition = "2021"
 
@@ -9,4 +9,4 @@ solver = { version = "0.1.0", path = "../solver" }
 [build-dependencies]
 cargo-manifest = "0.17.0"
 chrono = "0.4.38"
-reqwest = { version = "0.12.9", features = ["blocking"] }
+reqwest = { version = "0.12.9", features=["blocking"] }

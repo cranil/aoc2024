@@ -1,10 +1,9 @@
 [package]
-name = "day02"
+name = "day14"
 version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-solver = { version = "0.1.0", path = "../solver" }
 
 [build-dependencies]
 cargo-manifest = "0.17.0"
