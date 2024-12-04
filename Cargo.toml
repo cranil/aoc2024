@@ -1,6 +1,7 @@
 [workspace]
 resolver = "2"
 members = [
+    "algos",
     "day01",
     "day02",
     "day03",
