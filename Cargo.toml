@@ -27,5 +27,6 @@ members = [
     "day23",
     "day24",
     "day25",
+    "graph",
     "solver",
 ]
