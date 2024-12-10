@@ -70,11 +70,11 @@ fn dfs_unique(
 
 fn dfs_all(
     grid: &RectangularGrid<u8>,
-    memoize: &mut RectangularGrid<usize>,
+    memoize: &mut RectangularGrid<Option<usize>>,
     x: usize,
     y: usize,
 ) -> usize {
-    if let Some(count) = memoize.at(x, y) {
+    if let Some(Some(count)) = memoize.at(x, y) {
         return *count;
     }
     let height = *grid.at(x, y).unwrap();
@@ -87,7 +87,7 @@ fn dfs_all(
             count += dfs_all(grid, memoize, nx, ny);
         }
     }
-    memoize.set(x, y, count);
+    memoize.set(x, y, Some(count));
     count
 }
 
