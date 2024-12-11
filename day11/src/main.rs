@@ -43,10 +43,12 @@ fn solve1(input: &str) -> usize {
         .map(|x| x.parse::<usize>().unwrap())
         .collect::<Vec<_>>();
     let mut total = 0;
+    let mut memoize = HashMap::new();
     for stone in stones {
-        let num_stones = stone_splitter(stone, 25, &mut HashMap::new());
+        let num_stones = stone_splitter(stone, 25, &mut memoize);
         total += num_stones;
     }
+    println!("{:?}", memoize.len());
     total
 }
 
@@ -56,10 +58,12 @@ fn solve2(input: &str) -> usize {
         .map(|x| x.parse::<usize>().unwrap())
         .collect::<Vec<_>>();
     let mut total = 0;
+    let mut memoize = HashMap::new();
     for stone in stones {
-        let num_stones = stone_splitter(stone, 75, &mut HashMap::new());
+        let num_stones = stone_splitter(stone, 75, &mut memoize);
         total += num_stones;
     }
+    println!("{:?}", memoize.len());
     total
 }
 
