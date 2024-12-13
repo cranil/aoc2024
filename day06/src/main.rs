@@ -1,11 +1,13 @@
 use std::collections::HashSet;
 
+use algos::fnv_hash_map::Fnv1aHashSet;
+
 use algos::grid::{Grid, RectangularGrid};
 
 fn do_rounds(
-    mut grid: Option<RectangularGrid<char>>,
-    &(obstacles, start): &(&HashSet<(usize, usize)>, (usize, usize)),
-) -> Option<usize> {
+    grid: Option<RectangularGrid<char>>,
+    &(obstacles, start): &(&Fnv1aHashSet<(usize, usize)>, (usize, usize)),
+) -> Option<Fnv1aHashSet<(usize, usize)>> {
     let mut current = start;
     let mut dir = (0, -1);
 
@@ -17,7 +19,8 @@ fn do_rounds(
         (height, width)
     };
 
-    let mut visited = HashSet::new();
+    let mut visited = Fnv1aHashSet::default();
+    let mut path = Fnv1aHashSet::default();
     loop {
         let mut os = match dir {
             (0, -1) => obstacles
@@ -45,33 +48,34 @@ fn do_rounds(
             (-1, 0) => x1.cmp(x2),
             _ => unreachable!(),
         });
+
         if os.is_empty() {
             match dir {
                 (0, -1) => {
-                    if let Some(ref mut grid) = grid {
+                    if grid.is_some() {
                         for y in 0..current.1 {
-                            grid.set(current.0, y, 'X');
+                            path.insert((current.0, y));
                         }
                     }
                 }
                 (1, 0) => {
-                    if let Some(ref mut grid) = grid {
+                    if grid.is_some() {
                         for x in current.0 + 1..width {
-                            grid.set(x, current.1, 'X');
+                            path.insert((x, current.1));
                         }
                     }
                 }
                 (0, 1) => {
-                    if let Some(ref mut grid) = grid {
+                    if grid.is_some() {
                         for y in current.1 + 1..height {
-                            grid.set(current.0, y, 'X');
+                            path.insert((current.0, y));
                         }
                     }
                 }
                 (-1, 0) => {
-                    if let Some(ref mut grid) = grid {
+                    if grid.is_some() {
                         for x in 0..current.0 {
-                            grid.set(x, current.1, 'X');
+                            path.insert((x, current.1));
                         }
                     }
                 }
@@ -86,33 +90,34 @@ fn do_rounds(
             visited.insert((next.0, next.1, dir));
             match dir {
                 (0, -1) => {
-                    if let Some(ref mut grid) = grid {
+                    if grid.is_some() {
                         for y in next.1 + 1..=current.1 {
-                            grid.set(next.0, y, 'X');
+                            path.insert((next.0, y));
                         }
                     }
+
                     current.1 = next.1 + 1;
                 }
                 (1, 0) => {
-                    if let Some(ref mut grid) = grid {
-                        for x in current.0 + 1..=next.0 {
-                            grid.set(x, next.1, 'X');
+                    if grid.is_some() {
+                        for x in current.0 + 1..next.0 {
+                            path.insert((x, next.1));
                         }
                     }
                     current.0 = next.0 - 1;
                 }
                 (0, 1) => {
-                    if let Some(ref mut grid) = grid {
+                    if grid.is_some() {
                         for y in current.1..next.1 {
-                            grid.set(next.0, y, 'X');
+                            path.insert((next.0, y));
                         }
                     }
                     current.1 = next.1 - 1;
                 }
                 (-1, 0) => {
-                    if let Some(ref mut grid) = grid {
+                    if grid.is_some() {
                         for x in next.0 + 1..=current.0 {
-                            grid.set(x, next.1, 'X');
+                            path.insert((x, next.1));
                         }
                     }
                     current.0 = next.0 + 1;
@@ -128,50 +133,74 @@ fn do_rounds(
             _ => unreachable!(),
         };
     }
-    let mut count = 0;
-    if let Some(ref grid) = grid {
-        for y in 0..height {
-            for x in 0..width {
-                if grid.at(x, y).unwrap() == &'X' {
-                    count += 1;
-                }
-            }
-        }
-    }
-    Some(count)
+
+    Some(path)
 }
 
-fn solve1(input: &(&HashSet<(usize, usize)>, (usize, usize))) -> usize {
-    let width = *input.0.iter().map(|(x, _)| x).max().unwrap() + 1;
-    let height = *input.0.iter().map(|(_, y)| y).max().unwrap() + 1;
+fn solve1(input: &(&Fnv1aHashSet<(usize, usize)>, (usize, usize))) -> usize {
+    let width = input.0.iter().map(|&(x, _)| x).max().unwrap() + 1;
+    let height = input.0.iter().map(|&(_, y)| y).max().unwrap() + 1;
     let mut grid = RectangularGrid::new(width, height);
     grid.fill('.');
-    for (x, y) in input.0.iter() {
-        grid.set(*x, *y, '#');
+    for &(x, y) in input.0.iter() {
+        grid.set(x, y, '#');
     }
 
-    do_rounds(Some(grid), input).unwrap()
+    do_rounds(Some(grid), input).unwrap().len()
 }
 
-fn solve2(input: &(&HashSet<(usize, usize)>, (usize, usize))) -> usize {
+fn solve2(input: &(&Fnv1aHashSet<(usize, usize)>, (usize, usize))) -> usize {
     let width = *input.0.iter().map(|(x, _)| x).max().unwrap() + 1;
     let height = *input.0.iter().map(|(_, y)| y).max().unwrap() + 1;
     let mut obstacles = input.0.clone();
 
+    let mut grid = RectangularGrid::new(width, height);
+
+    grid.fill('.');
+    for &(x, y) in input.0.iter() {
+        grid.set(x, y, '#');
+    }
+    let path = do_rounds(Some(grid), input).unwrap();
+
+    let mut candidates = Fnv1aHashSet::default();
+
     let mut count = 0;
-    for y in 0..height {
-        for x in 0..width {
-            if obstacles.contains(&(x, y)) {
+    for (x, y) in path {
+        candidates.insert((x, y));
+        if x > 0 {
+            if obstacles.contains(&(x - 1, y)) {
                 continue;
-            } else {
-                obstacles.insert((x, y));
             }
-            if do_rounds(None, &(&obstacles, input.1)).is_none() {
-                count += 1;
+            candidates.insert((x - 1, y));
+        }
+        if x < width - 1 {
+            if obstacles.contains(&(x + 1, y)) {
+                continue;
             }
-            obstacles.remove(&(x, y));
+            candidates.insert((x + 1, y));
+        }
+        if y > 0 {
+            if obstacles.contains(&(x, y - 1)) {
+                continue;
+            }
+            candidates.insert((x, y - 1));
+        }
+        if y < height - 1 {
+            if obstacles.contains(&(x, y + 1)) {
+                continue;
+            }
+            candidates.insert((x, y + 1));
         }
     }
+
+    for (x, y) in candidates {
+        obstacles.insert((x, y));
+        if do_rounds(None, &(&obstacles, input.1)).is_none() {
+            count += 1;
+        }
+        obstacles.remove(&(x, y));
+    }
+
     count
 }
 
@@ -179,8 +208,7 @@ fn main() {
     let input = include_str!("../input.txt");
     let lines = input.lines().collect::<Vec<_>>();
 
-    // let mut input = RectangularGrid::new(lines[0].len(), lines.len());
-    let mut obstacles = HashSet::new();
+    let mut obstacles = Fnv1aHashSet::default();
     let mut start = (0, 0);
     for (y, line) in lines.iter().enumerate() {
         for (x, c) in line.chars().enumerate() {

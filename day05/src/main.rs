@@ -1,4 +1,8 @@
-use std::collections::{HashMap, HashSet, VecDeque};
+use algos::fnv_hash_map::{Fnv1aHashMap, Fnv1aHashSet};
+use std::collections::VecDeque;
+
+type HashMap<K, V> = Fnv1aHashMap<K, V>;
+type HashSet<K> = Fnv1aHashSet<K>;
 
 struct Input {
     orderings: HashSet<(usize, usize)>,
@@ -7,7 +11,7 @@ struct Input {
 
 fn parse_input(input: &str) -> Input {
     let mut lines = input.lines();
-    let mut orderings = HashSet::new();
+    let mut orderings = HashSet::default();
     let mut updates = Vec::new();
     for line in lines.by_ref() {
         if line.is_empty() {
@@ -60,10 +64,11 @@ fn solve1(input: &Input) -> usize {
     sum
 }
 
+#[allow(dead_code)]
 fn topological_sort(pages: &HashSet<usize>, orderings: &HashSet<(usize, usize)>) -> Vec<usize> {
     let mut neighbours = pages
         .iter()
-        .map(|&x| (x, HashSet::new()))
+        .map(|&x| (x, HashSet::default()))
         .collect::<HashMap<_, _>>();
     let mut edges = orderings
         .iter()

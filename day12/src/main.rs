@@ -1,6 +1,7 @@
-use std::collections::HashSet;
-
-use algos::grid::{Grid, RectangularGrid};
+use algos::{
+    fnv_hash_map::Fnv1aHashSet,
+    grid::{Grid, RectangularGrid},
+};
 
 fn neighbors(x: usize, y: usize) -> impl Iterator<Item = (isize, isize)> {
     static DIRS: [(isize, isize); 4] = [(0, 1), (0, -1), (1, 0), (-1, 0)];
@@ -14,7 +15,7 @@ fn solve1(grid: &RectangularGrid<char>) -> usize {
     visited.fill(false);
 
     for ch in 'A'..='Z' {
-        let mut region = HashSet::new();
+        let mut region = Fnv1aHashSet::default();
 
         for y in 0..grid.height {
             for x in 0..grid.width {
@@ -92,7 +93,7 @@ fn solve2(grid: &RectangularGrid<char>) -> usize {
     visited.fill(false);
 
     for ch in 'A'..='Z' {
-        let mut region = HashSet::new();
+        let mut region = Fnv1aHashSet::default();
 
         for y in 0..grid.height {
             for x in 0..grid.width {

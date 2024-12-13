@@ -1,38 +1,34 @@
-use std::collections::HashMap;
+use algos::fnv_hash_map::Fnv1aHashMap;
 
-fn stone_splitter(num: usize, iters: usize, memoize: &mut HashMap<(usize, usize), usize>) -> usize {
+fn stone_splitter(
+    num: usize,
+    iters: usize,
+    memoize: &mut [Fnv1aHashMap<usize, usize>],
+) -> usize {
     if iters == 0 {
         return 1;
     }
-    if let Some(&val) = memoize.get(&(num, iters)) {
+    if let Some(&val) = memoize[iters - 1].get(&num) {
         return val;
     }
-    let digits = num
-        .to_string()
-        .chars()
-        .map(|x| x.to_digit(10).unwrap() as usize)
-        .collect::<Vec<_>>();
+
+    let n_digits = (num as f32).log10().floor() as u32 + 1;
+    let split = 10_usize.pow(n_digits / 2);
     if num == 0 {
         let num_stones = stone_splitter(1, iters - 1, memoize);
-        memoize.insert((num, iters), num_stones);
+        memoize[iters - 1].insert(num, num_stones);
         num_stones
-    } else if digits.len() % 2 == 0 {
-        let num1 = digits
-            .iter()
-            .take(digits.len() / 2)
-            .fold(0, |acc, x| acc * 10 + x);
-        let num2 = digits
-            .iter()
-            .skip(digits.len() / 2)
-            .fold(0, |acc, x| acc * 10 + x);
-        let num_stones =
-            stone_splitter(num1, iters - 1, memoize) + stone_splitter(num2, iters - 1, memoize);
-        memoize.insert((num, iters), num_stones);
+    } else if n_digits % 2 == 0 {
+        let num1 = num / split;
+        let num2 = num % split;
+        let num_stones = stone_splitter(num1, iters - 1, memoize)
+            + stone_splitter(num2, iters - 1, memoize);
+        memoize[iters - 1].insert(num, num_stones);
         num_stones
     } else {
         let num1 = num * 2024;
         let num_stones = stone_splitter(num1, iters - 1, memoize);
-        memoize.insert((num, iters), num_stones);
+        memoize[iters - 1].insert(iters, num_stones);
         num_stones
     }
 }
@@ -43,7 +39,7 @@ fn solve1(input: &str) -> usize {
         .map(|x| x.parse::<usize>().unwrap())
         .collect::<Vec<_>>();
     let mut total = 0;
-    let mut memoize = HashMap::new();
+    let mut memoize = vec![Fnv1aHashMap::default(); 25];
     for stone in stones {
         let num_stones = stone_splitter(stone, 25, &mut memoize);
         total += num_stones;
@@ -57,7 +53,7 @@ fn solve2(input: &str) -> usize {
         .map(|x| x.parse::<usize>().unwrap())
         .collect::<Vec<_>>();
     let mut total = 0;
-    let mut memoize = HashMap::new();
+    let mut memoize = vec![Fnv1aHashMap::default(); 75];
     for stone in stones {
         let num_stones = stone_splitter(stone, 75, &mut memoize);
         total += num_stones;

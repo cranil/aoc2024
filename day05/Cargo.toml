@@ -4,6 +4,7 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+algos = { version = "0.1.0", path = "../algos" }
 solver = { version = "0.1.0", path = "../solver" }
 
 [build-dependencies]

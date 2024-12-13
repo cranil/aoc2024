@@ -1,6 +1,7 @@
-use std::collections::{HashMap, HashSet};
-
-use algos::grid::{Grid, RectangularGrid};
+use algos::{
+    fnv_hash_map::{Fnv1aHashMap, Fnv1aHashSet},
+    grid::{Grid, RectangularGrid},
+};
 
 fn parse_grid(input: &str) -> RectangularGrid<u8> {
     let height = input.lines().count();
@@ -28,11 +29,7 @@ fn get_neighbors(
         .filter_map(|(dx, dy)| {
             let x = x as isize + dx;
             let y = y as isize + dy;
-            if x < 0
-                || y < 0
-                || x >= grid.width as isize
-                || y >= grid.height as isize
-            {
+            if x < 0 || y < 0 || x >= grid.width as isize || y >= grid.height as isize {
                 None
             } else if *grid.at(x as usize, y as usize).unwrap() == height + 1 {
                 Some((x as usize, y as usize))
@@ -45,16 +42,16 @@ fn get_neighbors(
 
 fn dfs_unique(
     grid: &RectangularGrid<u8>,
-    memoize: &mut HashMap<(usize, usize), HashSet<(usize, usize)>>,
+    memoize: &mut Fnv1aHashMap<(usize, usize), Fnv1aHashSet<(usize, usize)>>,
     x: usize,
     y: usize,
-) -> HashSet<(usize, usize)> {
+) -> Fnv1aHashSet<(usize, usize)> {
     if let Some(reachable) = memoize.get(&(x, y)) {
         return reachable.clone();
     }
     let height = *grid.at(x, y).unwrap();
     let neighbors = get_neighbors(grid, x, y, height);
-    let mut reachable = HashSet::new();
+    let mut reachable = Fnv1aHashSet::default();
     for (nx, ny) in neighbors {
         if height == 8 {
             reachable.insert((nx, ny));
@@ -100,7 +97,7 @@ fn solve1(input: &str) -> usize {
         .collect::<Vec<_>>();
     heads
         .iter()
-        .map(|&(x, y)| dfs_unique(&grid, &mut HashMap::new(), x, y).len())
+        .map(|&(x, y)| dfs_unique(&grid, &mut Fnv1aHashMap::default(), x, y).len())
         .sum()
 }
 
