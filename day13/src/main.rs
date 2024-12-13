@@ -1,6 +1,7 @@
 fn solve(input: &str, c: isize) -> isize {
     let lines = input.lines().collect::<Vec<_>>();
     let mut sum = 0;
+
     for chunk in lines.chunks(4) {
         let mut iter = chunk.iter();
         let cons1 = iter.next().unwrap();
@@ -33,8 +34,31 @@ fn solve(input: &str, c: isize) -> isize {
         let num2 = b1 * x - b0 * y;
 
         if denom == 0 {
-            continue;
+            #[allow(non_snake_case)]
+            let (A, B, C) = if x < y { (a0, b0, x) } else { (a1, b1, y) };
+
+            let max_i = C / B;
+            let min_i = 0;
+
+            let min_j = 0;
+            let max_j = A / C;
+
+            let mut min_cost = None;
+
+            for i in min_i..max_i {
+                for j in min_j..max_j {
+                    if A * j + B * i == C {
+                        if let Some(cost) = min_cost {
+                            min_cost = Some(std::cmp::min(i + 3 * j, cost));
+                        } else {
+                            min_cost = Some(i + 3 * j);
+                        }
+                    }
+                }
+            }
+            sum += min_cost.unwrap_or(0);
         }
+
         if num1 % denom != 0 || num2 % denom != 0 {
             continue;
         }
