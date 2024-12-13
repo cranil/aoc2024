@@ -2,6 +2,7 @@ use std::fmt::{Display, Formatter};
 
 pub trait Grid<'a, T: 'a> {
     fn at(&self, x: usize, y: usize) -> Option<&T>;
+    fn at_unchecked(&self, x: usize, y: usize) -> &T;
     fn set(&mut self, x: usize, y: usize, value: T);
     fn fill(&mut self, value: T);
     fn size(&self) -> (usize, usize);
@@ -100,6 +101,10 @@ impl<'a, T: Default + Clone + 'a> Grid<'a, T> for RectangularGrid<T> {
         }
     }
 
+    fn at_unchecked(&self, x: usize, y: usize) -> &T {
+        &self.data[y * self.width + x]
+    }
+
     fn set(&mut self, x: usize, y: usize, value: T) {
         if x >= self.width || y >= self.height {
             return;
@@ -144,6 +149,11 @@ impl<'a, T: Default + Clone + 'a> Grid<'a, T> for LowerTriangularGrid<T> {
         }
         let index = y * (y + 1) / 2 + x;
         Some(&self.data[index])
+    }
+
+    fn at_unchecked(&self, x: usize, y: usize) -> &T {
+        let index = y * (y + 1) / 2 + x;
+        &self.data[index]
     }
 
     fn set(&mut self, x: usize, y: usize, value: T) {
@@ -191,6 +201,11 @@ impl<'a, T: Default + Clone + 'a> Grid<'a, T> for UpperTriangularGrid<T> {
         }
         let index = x * self.size - x * (x + 1) / 2 + y;
         Some(&self.data[index])
+    }
+
+    fn at_unchecked(&self, x: usize, y: usize) -> &T {
+        let index = x * self.size - x * (x + 1) / 2 + y;
+        &self.data[index]
     }
 
     fn set(&mut self, x: usize, y: usize, value: T) {
@@ -269,8 +284,10 @@ impl<T: Default + Clone> DynamicGrid<T> {
     pub fn insert_column(&mut self, index: usize) {
         self.data.reserve(self.height);
         for y in 0..self.height {
-            self.data
-                .insert(index + y * (self.width + 1), <T as Default>::default());
+            self.data.insert(
+                index + y * (self.width + 1),
+                <T as Default>::default(),
+            );
         }
         self.width += 1;
     }
@@ -303,6 +320,10 @@ impl<'a, T: Default + Clone + 'a> Grid<'a, T> for DynamicGrid<T> {
             return None;
         }
         Some(&self.data[y * self.width + x])
+    }
+
+    fn at_unchecked(&self, x: usize, y: usize) -> &T {
+        &self.data[y * self.width + x]
     }
 
     fn set(&mut self, x: usize, y: usize, value: T) {
